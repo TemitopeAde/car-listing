@@ -24,3 +24,8 @@ npm-debug.log*
 .DS_Store
 .idea/
 out
+
+# isolated local preview data and test artifacts
+.data/
+playwright-report/
+test-results/

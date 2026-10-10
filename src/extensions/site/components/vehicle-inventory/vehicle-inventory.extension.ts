@@ -1,0 +1,60 @@
+import { extensions } from "@wix/astro/builders";
+import { LAYOUT } from "@wix/react-component-schema";
+import { withEditorElementDefaults } from "@wix/react-component-utils";
+import merge from "deepmerge";
+import { editorElement } from "./vehicle-inventory.generated";
+import { defaultProps } from "./vehicle-inventory.props";
+import componentUrl from "./component.tsx?url";
+import componentPreviewUrl from "./component.preview.tsx?url";
+
+const editorElementWithDefaults = withEditorElementDefaults(
+  editorElement,
+  defaultProps,
+);
+
+export default extensions.editorReactComponent({
+  id: "a9382f3a-2945-43b9-97b3-797fecde252a",
+  type: "car_listing.VehicleInventory",
+  displayName: "vehicle-inventory",
+  description:
+    "Search vehicle inventory, compare cars, view vehicle details and contact the dealership. Customize the layout and appearance for your site.",
+  editorElement: merge(editorElementWithDefaults, {
+    // Declared here until `wix generate manifest` can regenerate this component.
+    data: {
+      pagination: {
+        displayName: "Pagination",
+        dataType: "textEnum",
+        textEnum: {
+          options: [
+            { value: "pages", displayName: "Numbered pages" },
+            { value: "infinite", displayName: "Infinite scroll" },
+          ],
+        },
+        defaultValue: "pages",
+      },
+    },
+    layout: {
+      resizeDirection: LAYOUT.RESIZE_DIRECTION.horizontal,
+      contentResizeDirection: LAYOUT.CONTENT_RESIZE_DIRECTION.vertical,
+    },
+  }),
+  installation: {
+    initialSize: {
+      width: {
+        sizingType: LAYOUT.SIZING_TYPE.pixels,
+        pixels: 1000,
+      },
+      height: {
+        sizingType: LAYOUT.SIZING_TYPE.content,
+      },
+    },
+  },
+  resources: {
+    client: {
+      componentUrl,
+    },
+    editor: {
+      componentUrl: componentPreviewUrl,
+    },
+  },
+});
