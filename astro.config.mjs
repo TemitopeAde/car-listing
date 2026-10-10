@@ -18,6 +18,9 @@ export default defineConfig({
   security: { checkOrigin: false },
   devToolbar: { enabled: false },
   vite: {
+    resolve: {
+      dedupe: ["react", "react-dom"],
+    },
     // Keep concurrent demo, Wix development, and build optimizers from replacing
     // each other's dependency metadata while dashboard modules are loading.
     cacheDir: `node_modules/.vite/car-listing-${localPreview ? "demo" : "wix"}-${building ? "build" : "dev"}`,

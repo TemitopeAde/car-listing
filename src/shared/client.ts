@@ -1,4 +1,6 @@
 import { httpClient } from "@wix/essentials";
+import { readResult } from "./api-response";
+export { readResult } from "./api-response";
 export const apiOrigin = new URL(import.meta.url).origin;
 export function apiUrl(route: string) {
   return new URL(`/api/${route}`, apiOrigin).href;
@@ -19,14 +21,6 @@ export function apiInit(body: unknown, method: string): RequestInit {
     headers: { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   };
-}
-export async function readResult<T>(response: Response): Promise<T> {
-  const result = await response.json();
-  if (!response.ok || !result.success)
-    throw new Error(
-      result.error?.message ?? "The request could not be completed.",
-    );
-  return result.data as T;
 }
 export async function api<T>(
   route: string,

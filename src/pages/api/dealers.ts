@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { context } from "../../backend/context";
-import { respond } from "../../backend/errors";
+import { respond, readJson, methodNotAllowed } from "../../backend/errors";
 import { dealerDirectory } from "../../backend/services/public-dealer-service";
 import {
   listDealers,
@@ -38,6 +38,8 @@ export const POST: APIRoute = ({ request }) =>
     const c = z
       .object({ id: z.string().optional(), payload: z.unknown() })
       .strict()
-      .parse(await request.json());
+      .parse(await readJson(request));
     return saveDealer(await context(true), c.payload, c.id);
   });
+
+export const ALL: APIRoute = () => methodNotAllowed(["GET", "POST"]);

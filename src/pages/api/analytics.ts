@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { context } from "../../backend/context";
-import { respond } from "../../backend/errors";
+import { respond, methodNotAllowed } from "../../backend/errors";
 import { analytics } from "../../backend/services/analytics-service";
 export const GET: APIRoute = ({ request }) =>
   respond(async () => {
@@ -16,3 +16,5 @@ export const GET: APIRoute = ({ request }) =>
         .parse(p.get("days") ?? 14),
     );
   });
+
+export const ALL: APIRoute = () => methodNotAllowed(["GET"]);

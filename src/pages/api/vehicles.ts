@@ -1,7 +1,12 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { context } from "../../backend/context";
-import { respond, AppError } from "../../backend/errors";
+import {
+  respond,
+  AppError,
+  readJson,
+  methodNotAllowed,
+} from "../../backend/errors";
 import {
   listVehicles,
   listVehicleMakes,
@@ -52,7 +57,7 @@ export const GET: APIRoute = ({ request }) =>
 export const POST: APIRoute = ({ request }) =>
   respond(async () => {
     const ctx = await context(true);
-    const c = command.parse(await request.json());
+    const c = command.parse(await readJson(request));
     if (c.action === "create")
       return createVehicle(ctx, c.payload, c.idempotencyKey);
     if (c.action === "bulk") {
@@ -79,3 +84,5 @@ export const POST: APIRoute = ({ request }) =>
       return duplicateVehicle(ctx, c.id, c.idempotencyKey);
     return setStatus(ctx, c.id, c.status);
   });
+
+export const ALL: APIRoute = () => methodNotAllowed(["GET", "POST"]);

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { context } from "../../backend/context";
-import { respond } from "../../backend/errors";
+import { respond, readJson, methodNotAllowed } from "../../backend/errors";
 import {
   getSettings,
   setSettings,
@@ -8,4 +8,8 @@ import {
 export const GET: APIRoute = () =>
   respond(async () => getSettings(await context()));
 export const PATCH: APIRoute = ({ request }) =>
-  respond(async () => setSettings(await context(true), await request.json()));
+  respond(async () =>
+    setSettings(await context(true), await readJson(request)),
+  );
+
+export const ALL: APIRoute = () => methodNotAllowed(["GET", "PATCH"]);

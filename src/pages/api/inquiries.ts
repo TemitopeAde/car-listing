@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { context } from "../../backend/context";
-import { respond } from "../../backend/errors";
+import { respond, readJson, methodNotAllowed } from "../../backend/errors";
 import {
   listInquiries,
   submitInquiry,
@@ -24,7 +24,7 @@ export const GET: APIRoute = ({ request }) =>
   });
 export const POST: APIRoute = ({ request }) =>
   respond(
-    async () => submitInquiry(await context(), await request.json()),
+    async () => submitInquiry(await context(), await readJson(request)),
     201,
   );
 export const PATCH: APIRoute = ({ request }) =>
@@ -32,6 +32,8 @@ export const PATCH: APIRoute = ({ request }) =>
     const c = z
       .object({ id: z.string(), payload: z.unknown() })
       .strict()
-      .parse(await request.json());
+      .parse(await readJson(request));
     return updateInquiry(await context(true), c.id, c.payload);
   });
+
+export const ALL: APIRoute = () => methodNotAllowed(["GET", "POST", "PATCH"]);
