@@ -6,6 +6,7 @@ import { editorElement } from "./vehicle-inventory.generated";
 import { defaultProps } from "./vehicle-inventory.props";
 import componentUrl from "./component.tsx?url";
 import componentPreviewUrl from "./component.preview.tsx?url";
+import { appearanceData, filterData } from "../widget-props";
 
 const editorElementWithDefaults = withEditorElementDefaults(
   editorElement,
@@ -21,6 +22,28 @@ export default extensions.editorReactComponent({
   editorElement: merge(editorElementWithDefaults, {
     // Declared here until `wix generate manifest` can regenerate this component.
     data: {
+      ...appearanceData,
+      ...filterData,
+      layout: {
+        displayName: "Layout",
+        dataType: "textEnum",
+        textEnum: {
+          options: [
+            { value: "grid", displayName: "Grid" },
+            { value: "list", displayName: "List" },
+          ],
+        },
+      },
+      columns: {
+        displayName: "Columns",
+        dataType: "number",
+        number: { min: "1", max: "4" },
+      },
+      radius: {
+        displayName: "Corner radius",
+        dataType: "number",
+        number: { min: "0", max: "32" },
+      },
       pagination: {
         displayName: "Pagination",
         dataType: "textEnum",

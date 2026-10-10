@@ -22,10 +22,14 @@ import { Button } from "./ui/button";
 import { Alert } from "./ui/card";
 import { cn } from "./ui/utils";
 import { vehicleDetailsUrl } from "../shared/utils";
-import { siteNavigation } from "../shared/site-navigation";
+import {
+  siteNavigation,
+  vehicleLinkWithFallback,
+} from "../shared/site-navigation";
 import { VehicleCard } from "./vehicle-card";
 import { Pagination } from "./pagination";
-import { Heart, LoaderCircle } from "lucide-react";
+import { Eye, Heart, LoaderCircle } from "lucide-react";
+import { VehicleQuickView } from "./vehicle-quick-view";
 import { toast, Toaster } from "sonner";
 import { toggleSavedCarForMember } from "../shared/member-saved-cars";
 import { onSavedCarsChange, readSavedCars } from "../shared/saved-cars";
@@ -77,6 +81,8 @@ export type MarketplaceProps = {
   /** Page holding the Vehicle Details widget; without it, details open inside this widget. */
   detailsPage?: string;
 };
+const badgeFor = (v: Vehicle) =>
+  v.demo ? "Sample" : v.status === "published" ? v.condition : v.status;
 export function Marketplace(props: MarketplaceProps) {
   return (
     <ElementStyleContext.Provider value={props.widgetStyle ?? {}}>
@@ -132,6 +138,8 @@ function MarketplaceContent({
     [detail, setDetail] = useState(initialVehicle?._id ?? ""),
     [comparison, setComparison] = useState<Vehicle[]>([]),
     [comparing, setComparing] = useState(false),
+    [quickView, setQuickView] = useState<Vehicle | null>(null),
+    quickViewTrigger = useRef<HTMLElement | null>(null),
     [saved, setSaved] = useState<string[]>([]),
     [availableMakes, setAvailableMakes] = useState<string[]>([]),
     [makesError, setMakesError] = useState("");
@@ -304,9 +312,14 @@ function MarketplaceContent({
   async function save(v: Vehicle) {
     try {
       const next = await toggleSavedCarForMember(async () => {
-        const href = detailsPage
-          ? await siteNavigation.pageUrl(vehicleDetailsUrl(v.slug, detailsPage))
-          : await siteNavigation.vehicleLink(v._id);
+        const href = await vehicleLinkWithFallback(
+          () =>
+            detailsPage
+              ? siteNavigation.pageUrl(vehicleDetailsUrl(v.slug, detailsPage))
+              : siteNavigation.vehicleLink(v._id),
+          v._id,
+          window.location.href,
+        );
         return {
           id: v._id,
           title: v.title,
@@ -328,7 +341,8 @@ function MarketplaceContent({
       setNavigationError("");
     } catch (error) {
       console.error("Could not save vehicle", error);
-      toast.error("Could not save this vehicle. Please log in and try again.", {
+      // Login was already confirmed above, so don't blame it here.
+      toast.error("Could not save this vehicle. Please try again.", {
         toasterId,
       });
     }
@@ -523,17 +537,7 @@ function MarketplaceContent({
               style={gridStyle}
             >
               {cards.map((v) => (
-                <VehicleCard
-                  key={v._id}
-                  vehicle={v}
-                  badge={
-                    v.demo
-                      ? "Sample"
-                      : v.status === "published"
-                        ? v.condition
-                        : v.status
-                  }
-                >
+                <VehicleCard key={v._id} vehicle={v} badge={badgeFor(v)}>
                   <Button
                     disabled={designMode}
                     {...elementStyle("view-vehicle")}
@@ -547,11 +551,25 @@ function MarketplaceContent({
                     setComparison={setComparison}
                   />
                   <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto h-10 w-10 px-0"
+                    disabled={designMode}
+                    aria-label={`Quick view ${v.title}`}
+                    title="Quick view"
+                    onClick={(e) => {
+                      quickViewTrigger.current = e.currentTarget;
+                      setQuickView(v);
+                    }}
+                  >
+                    <Eye className="h-5 w-5" />
+                  </Button>
+                  <Button
                     {...elementStyle("save-vehicle")}
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      "ml-auto h-10 w-10 px-0",
+                      "h-10 w-10 px-0",
                       saved.includes(v._id) && "text-primary",
                     )}
                     disabled={designMode}
@@ -608,6 +626,17 @@ function MarketplaceContent({
               </div>
             )
           )}
+          <VehicleQuickView
+            vehicle={quickView}
+            badge={quickView ? badgeFor(quickView) : undefined}
+            scope={scope}
+            onClose={() => setQuickView(null)}
+            returnFocus={quickViewTrigger.current}
+            onViewDetails={(v) => {
+              setQuickView(null);
+              void viewVehicle(v);
+            }}
+          />
           <CompareTray
             comparison={comparison}
             setComparison={setComparison}

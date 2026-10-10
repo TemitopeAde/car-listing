@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { toggleSavedCarForMember } from "../shared/member-saved-cars";
 import type { SavedCar } from "../shared/saved-cars";
+import { vehicleLinkWithFallback } from "../shared/site-navigation";
 
 test("only members can toggle saved cars, and expired or failed login checks cannot write", async () => {
   const values = new Map<string, string>();
@@ -41,4 +42,30 @@ test("only members can toggle saved cars, and expired or failed login checks can
   );
   assert.deepEqual([...values], snapshot);
   assert.deepEqual(await toggleSavedCarForMember(getCar, async () => true), []);
+});
+test("a saved vehicle falls back to a current-page link when Wix can't provide the site URL", async () => {
+  assert.equal(
+    await vehicleLinkWithFallback(
+      async () => "https://cars.example.com/vehicle-details?slug=camry",
+      "car-1",
+      "https://cars.example.com/inventory",
+    ),
+    "https://cars.example.com/vehicle-details?slug=camry",
+  );
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    assert.equal(
+      await vehicleLinkWithFallback(
+        async () => {
+          throw new Error("Wix did not return a valid site URL.");
+        },
+        "car-1",
+        "https://cars.example.com/inventory#tab=all",
+      ),
+      "https://cars.example.com/inventory#tab=all&car=car-1",
+    );
+  } finally {
+    console.warn = warn;
+  }
 });

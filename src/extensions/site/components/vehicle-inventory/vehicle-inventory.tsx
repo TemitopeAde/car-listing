@@ -5,6 +5,7 @@ import { Marketplace } from "../../../../storefront/marketplace";
 import { vehicleDetailsPath } from "../../../../shared/utils";
 import type { VehicleInventoryProps } from "./vehicle-inventory.props";
 import styles from "./vehicle-inventory.module.css";
+import { widgetAppearance, inventoryFilterVisibility } from "../widget-props";
 export const VehicleInventory: FC<VehicleInventoryProps> = (props) => {
   const {
     id,
@@ -63,6 +64,11 @@ export const VehicleInventory: FC<VehicleInventoryProps> = (props) => {
           limit={itemLimit}
           featuredOnly={featuredOnly}
           pagination={pagination === "infinite" ? "infinite" : "pages"}
+          layout={props.layout}
+          columns={props.columns}
+          radius={props.radius}
+          widgetStyle={widgetAppearance(props)}
+          filterVisibility={inventoryFilterVisibility(props)}
           designMode={designMode}
           detailsPage={vehicleDetailsPath}
         />

@@ -1,4 +1,5 @@
 import type { VehicleForm } from "./vehicle-form-types";
+import { Checkbox } from "./ui/checkbox";
 export function VehicleFeatures({ form }: { form: VehicleForm }) {
   const { watch, setValue } = form;
   const features = watch("features") ?? [];
@@ -25,8 +26,7 @@ export function VehicleFeatures({ form }: { form: VehicleForm }) {
             key={f}
             className="flex items-center gap-3 text-sm p-3 rounded-lg border"
           >
-            <input
-              type="checkbox"
+            <Checkbox
               checked={features.includes(f)}
               onChange={(e) =>
                 setValue(

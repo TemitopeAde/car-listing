@@ -90,27 +90,13 @@ test("dealer can create, publish and receive a consented vehicle inquiry", async
     data: { action: "status", id: vehicle._id, status: "archived" },
   });
 });
-test("filters, appearance persistence, CSV errors and mobile navigation work", async ({
-  page,
-  request,
-}) => {
+test("filters, CSV errors and mobile navigation work", async ({ page }) => {
   await page.goto("/preview#Vehicles");
   await page.getByLabel("Search vehicles").fill("Land Cruiser");
   await expect(
     page.getByRole("button", { name: /Toyota Land Cruiser/ }).first(),
   ).toBeVisible();
   await expect(page.getByText("Camry", { exact: false })).toHaveCount(0);
-  await page.getByRole("button", { name: "Appearance", exact: true }).click();
-  await page.getByLabel("Showroom name").fill("Browser Preview Autos");
-  await page
-    .getByRole("button", { name: "Save appearance", exact: true })
-    .click();
-  await expect(
-    page.getByText("Appearance saved", { exact: true }),
-  ).toBeVisible();
-  expect(
-    (await (await request.get("/api/settings")).json()).data.brandName,
-  ).toBe("Browser Preview Autos");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Toggle navigation" }).click();
   await page

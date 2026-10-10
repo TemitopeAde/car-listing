@@ -8,8 +8,8 @@ async function loggedIn(): Promise<boolean> {
     ["localhost", "127.0.0.1"].includes(window.location.hostname)
   )
     return false;
-  const { authentication } = await import("@wix/site");
-  return authentication.loggedIn();
+  const { currentMember } = await import("@wix/site-members");
+  return Boolean((await currentMember.getMember())?._id);
 }
 
 export async function toggleSavedCarForMember(

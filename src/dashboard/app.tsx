@@ -7,7 +7,6 @@ import {
   MessageSquare,
   ChartNoAxesCombined,
   Upload,
-  Palette,
   Settings as SettingsIcon,
   CreditCard,
   ChevronDown,
@@ -36,9 +35,6 @@ const Analytics = lazy(() =>
 const Imports = lazy(() =>
   import("./imports").then((m) => ({ default: m.Imports })),
 );
-const Appearance = lazy(() =>
-  import("./appearance").then((m) => ({ default: m.Appearance })),
-);
 const Settings = lazy(() =>
   import("./settings").then((m) => ({ default: m.Settings })),
 );
@@ -55,7 +51,6 @@ const navigation = [
   { label: "Inquiries", icon: MessageSquare },
   { label: "Analytics", icon: ChartNoAxesCombined },
   { label: "Import / Export", icon: Upload },
-  { label: "Appearance", icon: Palette },
   { label: "Settings", icon: SettingsIcon },
   { label: "Billing", icon: CreditCard },
 ];
@@ -66,7 +61,6 @@ const descriptions: Record<string, string> = {
   Inquiries: "From interest to a new set of keys.",
   Analytics: "The numbers behind your next move.",
   "Import / Export": "Less data entry. More time on the floor.",
-  Appearance: "Your brand, in the driver’s seat.",
   Settings: "The details that keep things running.",
   Billing: "Choose the space your business needs.",
 };
@@ -189,14 +183,7 @@ export default function App() {
             <span className="text-foreground">{page}</span>
           </p>
           <div className="ml-auto flex items-center gap-4">
-            {import.meta.env.DEV ? (
-              <Button asChild variant="outline" size="sm">
-                <a href="/preview/storefront" target="_blank" rel="noreferrer">
-                  View showroom
-                  <ArrowUpRight size={14} />
-                </a>
-              </Button>
-            ) : (
+            {!import.meta.env.DEV && (
               <Button
                 variant="outline"
                 size="sm"
@@ -258,8 +245,6 @@ export default function App() {
               <Analytics />
             ) : page === "Import / Export" ? (
               <Imports />
-            ) : page === "Appearance" ? (
-              <Appearance />
             ) : page === "Settings" ? (
               <Settings />
             ) : (

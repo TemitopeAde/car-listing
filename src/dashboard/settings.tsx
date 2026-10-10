@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, ExternalLink, Trash2, CarFront } from "lucide-react";
+import { Check, Trash2, CarFront } from "lucide-react";
 import { api } from "./api";
 import { defaultTheme, type Theme } from "../shared/schemas";
 import { useResource } from "./hooks";
@@ -40,9 +40,7 @@ export function Settings() {
     <div className="space-y-6">
       <section className="surface p-6">
         <h2 className="section-heading">Showroom settings</h2>
-        <p className="hint mt-1 mb-5">
-          Default currency and detail-page routing.
-        </p>
+        <p className="hint mt-1 mb-5">Default showroom currency.</p>
         <div className="grid sm:grid-cols-2 gap-5">
           <div>
             <label className="label" htmlFor="default-currency">
@@ -63,19 +61,6 @@ export function Settings() {
                 <option key={c}>{c}</option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="detail-path">
-              Vehicle detail page path
-            </label>
-            <input
-              id="detail-path"
-              className="field"
-              value={theme.detailBasePath}
-              onChange={(e) =>
-                setTheme({ ...theme, detailBasePath: e.target.value })
-              }
-            />
           </div>
         </div>
         <Button
@@ -108,14 +93,6 @@ export function Settings() {
             <p>{s}</p>
           </div>
         ))}
-        {import.meta.env.DEV && (
-          <Button asChild variant="outline" className="mt-4">
-            <a href="/preview/storefront" target="_blank" rel="noreferrer">
-              Open local storefront preview
-              <ExternalLink size={15} />
-            </a>
-          </Button>
-        )}
       </section>
       <SavedCarsSettings />
       <section className="surface p-6">

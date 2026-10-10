@@ -6,6 +6,7 @@ import { editorElement } from "./vehicle-details.generated";
 import { defaultProps } from "./vehicle-details.props";
 import componentUrl from "./component.tsx?url";
 import componentPreviewUrl from "./component.preview.tsx?url";
+import { appearanceData } from "../widget-props";
 
 const display = { display: { displayValues: ["none", "block"] } };
 // `wix generate manifest` can't derive parts from the shared storefront markup (nested
@@ -15,6 +16,12 @@ const declared = {
   ...editorElement,
   displayName: "Vehicle Details",
   data: {
+    ...appearanceData,
+    radius: {
+      displayName: "Corner radius",
+      dataType: "number",
+      number: { min: "0", max: "32" },
+    },
     direction: { displayName: "Direction", dataType: "direction" },
     backLabel: {
       displayName: "Back button label",

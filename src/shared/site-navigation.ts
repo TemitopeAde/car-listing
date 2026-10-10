@@ -62,3 +62,26 @@ export const siteNavigation = createSiteNavigation({
   url: async () => (await hostLocation()).url(),
   to: async (url) => (await hostLocation()).to(url),
 });
+/**
+ * A link back to a vehicle for the saved-cars list. If Wix can't provide the site URL, it falls
+ * back to the current page, so saving a vehicle never fails just because a link couldn't be built.
+ */
+export async function vehicleLinkWithFallback(
+  build: () => Promise<string>,
+  id: string,
+  currentUrl: string,
+) {
+  try {
+    return await build();
+  } catch (error) {
+    console.warn(
+      "Could not build the vehicle link; using the current page",
+      error,
+    );
+    const url = new URL(currentUrl);
+    const hash = new URLSearchParams(url.hash.slice(1));
+    hash.set("car", id);
+    url.hash = hash.toString();
+    return url.href;
+  }
+}

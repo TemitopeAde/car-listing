@@ -202,8 +202,7 @@ export function Overview({
               {[
                 ["01", "Set up your dealership", "Dealers"],
                 ["02", "Add your real inventory", "Vehicles"],
-                ["03", "Make it your own", "Appearance"],
-                ["04", "Place your site widget", "Settings"],
+                ["03", "Place your site widget", "Settings"],
               ].map(([n, title, section]) => (
                 <button
                   key={n}

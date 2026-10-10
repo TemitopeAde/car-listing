@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Checkbox } from "./components/ui/checkbox";
 import { assetUrl } from "../shared/client";
 import { toast } from "sonner";
 import {
@@ -299,9 +300,12 @@ export function Vehicles({ edit }: { edit: (v: Vehicle | null) => void }) {
                 <thead className="bg-muted/60 text-xs text-muted-foreground">
                   <tr>
                     <th className="p-4">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         aria-label="Select all vehicles on this page"
+                        indeterminate={
+                          rows.some((v) => selected.includes(v._id)) &&
+                          !rows.every((v) => selected.includes(v._id))
+                        }
                         checked={
                           rows.length > 0 &&
                           rows.every((v) => selected.includes(v._id))
@@ -337,8 +341,7 @@ export function Vehicles({ edit }: { edit: (v: Vehicle | null) => void }) {
                       )}
                     >
                       <td className="p-4">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           aria-label={`Select ${v.title}`}
                           checked={selected.includes(v._id)}
                           onChange={() => toggle(v._id)}

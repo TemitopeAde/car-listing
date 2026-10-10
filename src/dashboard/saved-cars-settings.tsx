@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Checkbox } from "./components/ui/checkbox";
 import { toast } from "sonner";
 import { embeddedScripts } from "@wix/app-management";
 import { Button } from "./components/ui/button";
@@ -103,8 +104,7 @@ export function SavedCarsSettings({
             : "Click Embed script to install or refresh the saved cars script on your site."}
       </p>
       <label className="flex items-center gap-2 text-sm mb-5">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={form.enabled}
           disabled={loading || busy}
           onChange={(e) => setForm({ ...form, enabled: e.target.checked })}

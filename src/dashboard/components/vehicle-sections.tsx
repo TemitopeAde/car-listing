@@ -1,4 +1,5 @@
 import type { VehicleForm } from "./vehicle-form-types";
+import { Checkbox } from "./ui/checkbox";
 import type { Vehicle, VehicleInput, Dealer } from "../../shared/schemas";
 import { Button, cn } from "./ui/button";
 import { transitions } from "../../shared/utils";
@@ -204,7 +205,7 @@ export function VehicleSections({
           {select("currency", "Currency", ["USD", "EUR", "GBP", "NGN"])}
           {field("originalPrice", "Original price (optional)", "number")}
           <label className="flex items-center gap-2">
-            <input type="checkbox" {...register("negotiable")} />
+            <Checkbox {...register("negotiable")} />
             Price is negotiable
           </label>
           <div className="sm:col-span-2">
@@ -335,7 +336,7 @@ export function VehicleSections({
       {section === 7 && (
         <div className="space-y-5">
           <label className="flex items-center gap-3">
-            <input type="checkbox" {...register("featured")} />
+            <Checkbox {...register("featured")} />
             Feature this vehicle
           </label>
           <div>
