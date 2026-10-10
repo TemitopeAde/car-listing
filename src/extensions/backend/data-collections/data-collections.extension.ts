@@ -12,6 +12,8 @@ import auditLogsCollection from "./audit-logs";
 
 import settingsCollection from "./settings";
 
+import savedCarsCollection from "./saved-cars";
+
 export default extensions.dataCollections({
   id: "e135a83d-3f88-4104-b386-fe66f828bb42",
   name: "Data Collections",
@@ -22,5 +24,6 @@ export default extensions.dataCollections({
     eventsCollection,
     auditLogsCollection,
     settingsCollection,
+    savedCarsCollection,
   ],
 });

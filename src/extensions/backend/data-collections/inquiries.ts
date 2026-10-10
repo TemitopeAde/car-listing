@@ -16,6 +16,16 @@ export default {
     { key: "preferredDate", displayName: "preferredDate", type: "TEXT" },
     { key: "status", displayName: "status", type: "TEXT" },
     { key: "notes", displayName: "notes", type: "TEXT" },
+    {
+      key: "confirmationEmailStatus",
+      displayName: "Confirmation email status",
+      type: "TEXT",
+    },
+    {
+      key: "confirmationTransmissionId",
+      displayName: "Confirmation transmission ID",
+      type: "TEXT",
+    },
     { key: "actorHash", displayName: "actorHash", type: "TEXT" },
     { key: "createdAt", displayName: "createdAt", type: "TEXT" },
     { key: "updatedAt", displayName: "updatedAt", type: "TEXT" },

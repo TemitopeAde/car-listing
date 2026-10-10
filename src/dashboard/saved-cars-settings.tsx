@@ -32,8 +32,8 @@ export function SavedCarsSettings({
     [installedEnabled, setInstalledEnabled] = useState(false);
   useEffect(() => {
     let active = true;
-    scripts
-      .getEmbeddedScript({ componentId })
+    Promise.resolve()
+      .then(() => scripts.getEmbeddedScript({ componentId }))
       .then((script) => {
         if (!active) return;
         setEmbedded(true);
@@ -90,9 +90,8 @@ export function SavedCarsSettings({
     <section className="surface p-6">
       <h3 className="section-heading">Saved cars button</h3>
       <p className="hint mt-2 mb-5">
-        A floating button in the bottom-left corner of every site page. It
-        appears once a visitor saves a car and lists their saved cars on that
-        device.
+        A floating button in the bottom-left corner of every site page. It lists
+        the signed-in member’s saved cars, which they can access on any device.
       </p>
       <p role="status" className="hint mb-5">
         {loading

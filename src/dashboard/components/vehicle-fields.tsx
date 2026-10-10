@@ -61,7 +61,7 @@ export function VehicleSelect({
   form: VehicleForm;
   name: keyof VehicleInput;
   label: string;
-  values: string[];
+  values: readonly (string | { value: string; label: string })[];
   numeric?: boolean;
 }) {
   const {
@@ -80,9 +80,14 @@ export function VehicleSelect({
           setValueAs: numeric ? (value) => Number(value) : undefined,
         })}
       >
-        {values.map((v) => (
-          <option key={v}>{v}</option>
-        ))}
+        {values.map((option) => {
+          const value = typeof option === "string" ? option : option.value;
+          return (
+            <option key={value} value={value}>
+              {typeof option === "string" ? option : option.label}
+            </option>
+          );
+        })}
       </select>
       {errors[name] && (
         <p className="text-xs text-red-700 mt-1">

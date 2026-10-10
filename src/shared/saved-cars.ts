@@ -1,68 +1,72 @@
-// Saved cars live in the visitor's browser only. The marketplace widget writes them and the
-// saved-cars embedded script reads them; both run in the same site document.
-export type SavedCar = {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  image: string;
-  href: string;
-};
-const storageKey = "autohaus:saved-cars:v1";
-export const savedCarsEvent = "autohaus:saved-cars";
-const maxSaved = 50;
-function isSavedCar(value: unknown): value is SavedCar {
-  if (!value || typeof value !== "object") return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === "string" &&
-    typeof v.title === "string" &&
-    typeof v.price === "number" &&
-    typeof v.currency === "string" &&
-    typeof v.image === "string" &&
-    typeof v.href === "string"
-  );
-}
-export function readSavedCars(): SavedCar[] {
-  try {
-    const parsed: unknown = JSON.parse(
-      localStorage.getItem(storageKey) ?? "[]",
-    );
-    return Array.isArray(parsed) ? parsed.filter(isSavedCar) : [];
-  } catch {
-    return [];
+import {
+  createAccountSavedCars,
+  type AccountSavedCars,
+} from "./account-saved-cars";
+import { wixSavedCars } from "./wix-saved-cars";
+import type { SavedCar } from "./saved-cars-model";
+export type { SavedCar } from "./saved-cars-model";
+
+declare global {
+  interface Window {
+    autohausAccountSavedCars?: AccountSavedCars;
   }
 }
-function writeSavedCars(cars: SavedCar[]) {
-  const next = cars.slice(0, maxSaved);
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(next));
-  } catch (error) {
-    console.error("Could not store saved cars", error);
-  }
-  window.dispatchEvent(new CustomEvent(savedCarsEvent));
-  return next;
+function store() {
+  return (window.autohausAccountSavedCars ??=
+    createAccountSavedCars(wixSavedCars));
 }
-export function toggleSavedCar(car: SavedCar) {
-  const current = readSavedCars();
-  return writeSavedCars(
-    current.some((c) => c.id === car.id)
-      ? current.filter((c) => c.id !== car.id)
-      : [car, ...current],
-  );
+export function readSavedCars() {
+  return typeof window === "undefined" ? [] : store().state().cars;
+}
+export function savedCarsState() {
+  return store().state();
+}
+export function refreshSavedCars() {
+  return store().refresh();
+}
+export function toggleSavedCar(getCar: () => Promise<SavedCar>) {
+  return store().toggle(getCar);
 }
 export function removeSavedCar(id: string) {
-  return writeSavedCars(readSavedCars().filter((c) => c.id !== id));
+  return store().remove(id);
 }
-/** Calls `listener` whenever saved cars change in this tab or another tab. */
+export function clearSavedCars() {
+  return store().clear();
+}
 export function onSavedCarsChange(listener: () => void) {
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === storageKey) listener();
+  return store().subscribe(listener);
+}
+
+/** Refresh on return to the site and while visible, so account changes and other devices sync. */
+export function watchSavedCars() {
+  let active = true;
+  const unsubscribe: Array<() => void> = [];
+  const refresh = () => {
+    if (document.visibilityState !== "hidden")
+      void refreshSavedCars().catch((error) =>
+        console.error("Could not load account saved cars", error),
+      );
   };
-  window.addEventListener(savedCarsEvent, listener);
-  window.addEventListener("storage", onStorage);
+  refresh();
+  window.addEventListener("focus", refresh);
+  document.addEventListener("visibilitychange", refresh);
+  const timer = window.setInterval(refresh, 30000);
+  if (import.meta.env.PUBLIC_CAR_LISTING_DEMO !== "1") {
+    void import("@wix/site")
+      .then(({ authentication }) => {
+        if (!active) return;
+        unsubscribe.push(authentication.onLogin(refresh));
+        unsubscribe.push(authentication.onLogout(() => store().reset()));
+      })
+      .catch((error) =>
+        console.error("Could not listen for member session changes", error),
+      );
+  }
   return () => {
-    window.removeEventListener(savedCarsEvent, listener);
-    window.removeEventListener("storage", onStorage);
+    active = false;
+    for (const stop of unsubscribe) stop();
+    window.clearInterval(timer);
+    window.removeEventListener("focus", refresh);
+    document.removeEventListener("visibilitychange", refresh);
   };
 }

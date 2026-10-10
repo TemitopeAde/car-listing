@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
-test("dropdowns preserve custom values; multiple photos and videos transfer using TUS and attach after processing", async ({
-  page,
-}) => {
+/** Fakes the Wix Media TUS upload endpoints and media CDN; returns uploaded file names. */
+async function mockUploads(page: Page) {
   const transfers: string[] = [];
   await page.route("https://upload.wixmp.com/**", async (route) => {
     const request = route.request();
@@ -52,6 +52,13 @@ test("dropdowns preserve custom values; multiple photos and videos transfer usin
   await page.route("https://video.wixstatic.com/**", (route) =>
     route.fulfill({ status: 200, contentType: "video/mp4", body: "" }),
   );
+  return transfers;
+}
+
+test("dropdowns preserve custom values; multiple photos and videos transfer using TUS and attach after processing", async ({
+  page,
+}) => {
+  const transfers = await mockUploads(page);
   await page.goto("/preview");
   await page.evaluate(async () => {
     const path = "/src/tests/e2e/media-fixture.tsx";
@@ -186,4 +193,36 @@ test("saved photos and videos reload on a public vehicle detail page", async ({
   await expect(
     page.getByRole("button", { name: "View image 2: Back" }),
   ).toBeVisible();
+});
+
+test("photos dropped onto the drop zone upload and attach", async ({
+  page,
+}) => {
+  const transfers = await mockUploads(page);
+  await page.goto("/preview");
+  await page.evaluate(async () => {
+    const path = "/src/tests/e2e/media-fixture.tsx";
+    (await import(/* @vite-ignore */ path)).mount();
+  });
+  await page.getByRole("button", { name: "Media", exact: true }).click();
+  const zone = page.locator('label[for="upload-image"]');
+  const files = await page.evaluateHandle(() => {
+    const data = new DataTransfer();
+    data.items.add(
+      new File(["drop-1"], "dropped-1.jpg", { type: "image/jpeg" }),
+    );
+    data.items.add(
+      new File(["drop-2"], "dropped-2.png", { type: "image/png" }),
+    );
+    return data;
+  });
+  await zone.dispatchEvent("dragenter", { dataTransfer: files });
+  await expect(zone).toContainText("Drop to upload");
+  await zone.dispatchEvent("drop", { dataTransfer: files });
+  await expect(
+    page.getByText("Added to this vehicle", { exact: true }),
+  ).toHaveCount(2);
+  await expect(zone).toContainText("Drag photos here");
+  await expect(page.getByLabel(/Image 2 —/)).toBeVisible();
+  expect(transfers).toEqual(["dropped-1.jpg", "dropped-2.png"]);
 });

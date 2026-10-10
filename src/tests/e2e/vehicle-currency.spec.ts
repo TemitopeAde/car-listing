@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { money } from "../../shared/utils";
+import { currencyOptions } from "../../shared/currencies";
 
 test("vehicle currency defaults to USD and persists each dealer selection", async ({
   page,
@@ -19,7 +20,12 @@ test("vehicle currency defaults to USD and persists each dealer selection", asyn
   await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("USD");
 
   let vehicleId = "";
-  for (const currency of ["USD", "EUR", "GBP", "NGN"]) {
+  for (const { value: currency, label } of currencyOptions) {
+    await expect(
+      page
+        .getByLabel("Currency", { exact: true })
+        .getByRole("option", { name: label, exact: true }),
+    ).toHaveAttribute("value", currency);
     await page.getByLabel("Currency", { exact: true }).selectOption(currency);
     const savedResponse = page.waitForResponse(
       (response) =>
@@ -74,7 +80,7 @@ test("vehicle currency defaults to USD and persists each dealer selection", asyn
   expect(updated.ok()).toBeTruthy();
   // An unrelated update must preserve the dealer's chosen currency.
   const vehicle = (await updated.json()).data;
-  expect(vehicle.currency).toBe("NGN");
+  expect(vehicle.currency).toBe("SAR");
   const published = await request.post("/api/vehicles", {
     data: { action: "status", id: vehicleId, status: "published" },
   });
@@ -82,9 +88,36 @@ test("vehicle currency defaults to USD and persists each dealer selection", asyn
   await page.goto(`/preview/storefront#car=${vehicleId}`);
   await expect(page.getByRole("heading", { name: title })).toBeVisible();
   await expect(
-    page.getByText(money(26000, "NGN"), { exact: true }).first(),
+    page.getByText(money(26000, "SAR"), { exact: true }).first(),
   ).toBeVisible();
   const detail = await request.get(`/cars/${vehicle.slug}`);
   expect(detail.ok()).toBeTruthy();
-  expect(await detail.text()).toContain('"priceCurrency":"NGN"');
+  expect(await detail.text()).toContain('"priceCurrency":"SAR"');
+});
+
+test("default currency settings save and reopen all supported currencies", async ({
+  page,
+}) => {
+  await page.goto("/preview#Settings");
+  const selector = page.getByLabel("Default currency", { exact: true });
+  await expect(selector).toHaveValue("USD");
+  for (const { value, label } of currencyOptions) {
+    await expect(
+      selector.getByRole("option", { name: label, exact: true }),
+    ).toHaveAttribute("value", value);
+    await selector.selectOption(value);
+    const savedResponse = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/settings") &&
+        response.request().method() === "PATCH",
+    );
+    await page
+      .getByRole("button", { name: "Save settings", exact: true })
+      .click();
+    const response = await savedResponse;
+    expect(response.ok()).toBeTruthy();
+    expect((await response.json()).data.currency).toBe(value);
+    await page.reload();
+    await expect(selector).toHaveValue(value);
+  }
 });

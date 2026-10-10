@@ -1,8 +1,8 @@
 ---
-import { context } from '../../backend/context';
-import { getVehicle } from '../../backend/services/vehicle-service';
-import { VehicleDetail } from '../../storefront/vehicle-detail';
-import { money } from '../../shared/utils';
+import { context } from '../../../../backend/context';
+import { getVehicle } from '../../../../backend/services/vehicle-service';
+import { VehicleDetail } from '../../../../storefront/vehicle-detail';
+import { money } from '../../../../shared/utils';
 let vehicle;
 try { vehicle = await getVehicle(await context(), Astro.params.slug ?? '', true); }
 catch { return new Response('Vehicle not found or no Wix site session supplied.', { status: 404 }); }

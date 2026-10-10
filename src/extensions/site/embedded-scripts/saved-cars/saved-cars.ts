@@ -3,6 +3,10 @@ import {
   onSavedCarsChange,
   readSavedCars,
   removeSavedCar,
+  clearSavedCars,
+  refreshSavedCars,
+  savedCarsState,
+  watchSavedCars,
   type SavedCar,
 } from "../../../../shared/saved-cars";
 import { styles } from "./saved-cars.styles";
@@ -60,7 +64,9 @@ function initSavedCars() {
   const foot = el("div", "foot");
   const clear = el("button", "clear", "Clear all");
   clear.type = "button";
-  foot.append(clear);
+  const retry = el("button", "clear", "Try again");
+  retry.type = "button";
+  foot.append(clear, retry);
   panel.append(head, list, foot);
 
   const launcher = el("button", "launcher");
@@ -101,32 +107,56 @@ function initSavedCars() {
     remove.type = "button";
     remove.setAttribute("aria-label", `Remove ${car.title} from saved cars`);
     remove.innerHTML = close;
-    remove.addEventListener("click", () => removeSavedCar(car.id));
+    remove.disabled = savedCarsState().loading;
+    remove.addEventListener("click", () => {
+      void removeSavedCar(car.id).catch((error) =>
+        console.error("Could not remove account saved car", error),
+      );
+    });
     item.append(link, remove);
     return item;
   }
 
   function render() {
     const cars = readSavedCars();
-    // Nothing saved yet: keep the page uncluttered.
-    wrap.hidden = cars.length === 0;
-    if (!cars.length) setOpen(false);
+    const state = savedCarsState();
+    wrap.hidden = !state.memberId && !state.error;
+    if (wrap.hidden) setOpen(false);
     count.textContent = String(cars.length);
     launcher.setAttribute(
       "aria-label",
       `${heading}: ${cars.length} ${cars.length === 1 ? "car" : "cars"}`,
     );
-    sub.textContent = `${cars.length} ${cars.length === 1 ? "car" : "cars"} saved on this device`;
+    sub.textContent = state.loading
+      ? "Syncing your saved cars…"
+      : state.error ||
+        `${cars.length} ${cars.length === 1 ? "car" : "cars"} saved to your account`;
+    sub.setAttribute("role", state.error ? "alert" : "status");
+    retry.hidden = !state.error;
+    clear.disabled = state.loading || !cars.length;
     list.replaceChildren(...cars.map(renderItem));
   }
 
-  launcher.addEventListener("click", () => setOpen(panel.hidden === true));
+  launcher.addEventListener("click", () => {
+    setOpen(panel.hidden === true);
+    if (!panel.hidden)
+      void refreshSavedCars().catch((error) =>
+        console.error("Could not refresh account saved cars", error),
+      );
+  });
   closeBtn.addEventListener("click", () => {
     setOpen(false);
     launcher.focus();
   });
   clear.addEventListener("click", () => {
-    for (const car of readSavedCars()) removeSavedCar(car.id);
+    void clearSavedCars().catch((error) =>
+      console.error("Could not clear account saved cars", error),
+    );
+  });
+  retry.addEventListener("click", () => {
+    void refreshSavedCars().catch((error) =>
+      console.error("Could not refresh account saved cars", error),
+    );
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !panel.hidden) {
@@ -139,6 +169,7 @@ function initSavedCars() {
   });
   onSavedCarsChange(render);
   render();
+  watchSavedCars();
 }
 
 if (document.readyState === "loading") {

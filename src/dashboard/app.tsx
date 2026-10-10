@@ -101,9 +101,6 @@ export default function App() {
             <CarFront size={23} />
           </div>
           <div>
-            <p className="font-semibold text-xl tracking-tight">
-              Autohaus<span className="text-primary">.</span>
-            </p>
             <p className="text-[10px] uppercase tracking-[.2em] text-muted-foreground mt-1">
               Dealer workspace
             </p>
@@ -252,7 +249,7 @@ export default function App() {
             )}
           </Suspense>
           <footer className="text-[10px] text-muted-foreground mt-9 flex justify-between border-t pt-5">
-            <span>Autohaus · Car Dealer Listings & Marketplace</span>
+            <span>Car Dealer Listings & Marketplace</span>
             <span>Made for the road ahead.</span>
           </footer>
         </main>

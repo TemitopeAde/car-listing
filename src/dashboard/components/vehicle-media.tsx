@@ -3,11 +3,7 @@ import { assetUrl } from "../../shared/client";
 import { Button } from "./ui/button";
 import type { VehicleForm } from "./vehicle-form-types";
 import type { VehicleUploads } from "../use-vehicle-uploads";
-import {
-  mediaLimits,
-  mediaMimeTypes,
-  type MediaKind,
-} from "../../shared/media";
+import { MediaDropZone } from "./media-drop-zone";
 
 export function VehicleMedia({
   form,
@@ -19,35 +15,6 @@ export function VehicleMedia({
   const { watch, setValue } = form;
   const media = watch("media") ?? [];
   const videos = watch("videos") ?? [];
-  function picker(kind: MediaKind) {
-    const count = kind === "image" ? media.length : videos.length;
-    return (
-      <div className="space-y-2">
-        <label className="label" htmlFor={`upload-${kind}`}>
-          {kind === "image" ? "Upload photos" : "Upload videos"} ({count}/
-          {mediaLimits[kind]})
-        </label>
-        <input
-          id={`upload-${kind}`}
-          className="field h-auto py-3"
-          type="file"
-          multiple
-          accept={mediaMimeTypes[kind].join(",")}
-          disabled={uploads.busy || count >= mediaLimits[kind]}
-          aria-describedby={`upload-${kind}-hint`}
-          onChange={(event) => {
-            uploads.add(Array.from(event.currentTarget.files ?? []), kind);
-            event.currentTarget.value = "";
-          }}
-        />
-        <p id={`upload-${kind}-hint`} className="hint">
-          {kind === "image"
-            ? "Select several JPG, PNG, WebP or GIF photos, up to 25 MB each. The first photo is the cover."
-            : "Select MP4, WebM or MOV videos, up to 500 MB each. Videos may take longer to process."}
-        </p>
-      </div>
-    );
-  }
   function movePhoto(index: number, direction: number) {
     const list = [...(form.getValues("media") ?? [])];
     const current = list[index],
@@ -60,12 +27,23 @@ export function VehicleMedia({
   return (
     <div className="space-y-8">
       <p className="hint">
-        Choose files from your device to upload to your site's Media Manager.
-        Save the vehicle after uploads finish to keep them on the listing.
+        Drag files onto a box below, or click it to choose files. They upload to
+        your site's Media Manager. Save the vehicle after uploads finish to keep
+        them on the listing.
       </p>
       <div className="grid sm:grid-cols-2 gap-5">
-        {picker("image")}
-        {picker("video")}
+        <MediaDropZone
+          kind="image"
+          count={media.length}
+          busy={uploads.busy}
+          onFiles={(files) => uploads.add(files, "image")}
+        />
+        <MediaDropZone
+          kind="video"
+          count={videos.length}
+          busy={uploads.busy}
+          onFiles={(files) => uploads.add(files, "video")}
+        />
       </div>
       {uploads.jobs.length > 0 && (
         <section aria-label="Media upload progress" className="space-y-3">

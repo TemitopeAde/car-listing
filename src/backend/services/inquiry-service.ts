@@ -6,6 +6,7 @@ import { AppError } from "../errors";
 import { getVehicle } from "./vehicle-service";
 import { queryRows, saveRow, getRow } from "../repositories/repository";
 import { audit } from "./audit-service";
+import { confirmInquiry } from "./inquiry-email-service";
 export async function submitInquiry(ctx: Context, raw: unknown) {
   const input = inquiryInput.parse(raw),
     v = await getVehicle(ctx, input.vehicleId, true);
@@ -14,7 +15,12 @@ export async function submitInquiry(ctx: Context, raw: unknown) {
   const id = createHash("sha256")
     .update(`${ctx.siteId}:${ctx.actorId}:${input.idempotencyKey}`)
     .digest("hex");
-  if (await getRow(ctx, "inquiries", id, true)) return { id, received: true };
+  if (await getRow(ctx, "inquiries", id, true))
+    return {
+      id,
+      received: true,
+      confirmationEmailStatus: await confirmInquiry(ctx, id),
+    };
   const actorHash = createHash("sha256")
     .update(
       `${ctx.siteId}:${ctx.actorId}:${new Date().toISOString().slice(0, 13)}`,
@@ -61,7 +67,11 @@ export async function submitInquiry(ctx: Context, raw: unknown) {
     updatedAt: now,
   });
   await saveRow(ctx, "inquiries", { ...inquiry, actorHash }, true, true);
-  return { id, received: true };
+  return {
+    id,
+    received: true,
+    confirmationEmailStatus: await confirmInquiry(ctx, id),
+  };
 }
 export async function listInquiries(ctx: Context, status = "", cursor = 0) {
   const r = await queryRows(ctx, "inquiries", {

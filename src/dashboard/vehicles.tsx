@@ -13,7 +13,6 @@ import {
   LayoutGrid,
   List,
   Archive,
-  ArrowUpRight,
 } from "lucide-react";
 import { useResource } from "./hooks";
 import { Button, cn } from "./components/ui/button";
@@ -401,18 +400,6 @@ export function Vehicles({ edit }: { edit: (v: Vehicle | null) => void }) {
                           >
                             <Copy size={15} />
                           </Button>
-                          {import.meta.env.DEV && v.status === "published" && (
-                            <Button asChild variant="ghost" size="icon">
-                              <a
-                                href={`/preview/storefront#car=${v._id}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label={`Preview ${v.title}`}
-                              >
-                                <ArrowUpRight size={15} />
-                              </a>
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>

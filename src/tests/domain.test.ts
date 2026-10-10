@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { vehicleInput, inquiryInput, mediaSchema } from "../shared/schemas";
+import {
+  vehicleInput,
+  inquiryInput,
+  mediaSchema,
+  themeSchema,
+  defaultTheme,
+} from "../shared/schemas";
+import { currencyOptions } from "../shared/currencies";
 import {
   slugify,
   payment,
@@ -30,6 +37,50 @@ test("validates vehicle facts and rejects unknown fields, invalid VIN and negati
     false,
   );
   assert.equal(vehicleInput.safeParse({ ...base, price: -10 }).success, false);
+});
+test("all agreed currencies validate and round trip through CSV without changing prices", () => {
+  assert.deepEqual(
+    currencyOptions.map(({ value }) => value),
+    [
+      "USD",
+      "EUR",
+      "GBP",
+      "NGN",
+      "CAD",
+      "AUD",
+      "INR",
+      "ZAR",
+      "GHS",
+      "KES",
+      "AED",
+      "JPY",
+      "CNY",
+      "CHF",
+      "SAR",
+    ],
+  );
+  assert.equal(vehicleInput.parse(base).currency, "USD");
+  assert.equal(defaultTheme.currency, "USD");
+  for (const { value: currency } of currencyOptions) {
+    assert.equal(vehicleInput.parse({ ...base, currency }).currency, currency);
+    assert.equal(
+      themeSchema.parse({ ...defaultTheme, currency }).currency,
+      currency,
+    );
+    const vehicle = { ...demoVehicles[0], currency };
+    const imported = previewCSV(exportCSV([vehicle]));
+    assert.equal(imported.valid, 1);
+    assert.equal(imported.rows[0].data?.currency, currency);
+    assert.equal(imported.rows[0].data?.price, vehicle.price);
+  }
+  assert.equal(
+    vehicleInput.safeParse({ ...base, currency: "XYZ" }).success,
+    false,
+  );
+  assert.equal(
+    themeSchema.safeParse({ ...defaultTheme, currency: "XYZ" }).success,
+    false,
+  );
 });
 test("rejects executable media URLs and requires consent on inquiries", () => {
   assert.equal(

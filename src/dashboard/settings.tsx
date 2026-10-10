@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Check, Trash2, CarFront } from "lucide-react";
 import { api } from "./api";
 import { defaultTheme, type Theme } from "../shared/schemas";
+import { currencyOptions } from "../shared/currencies";
 import { useResource } from "./hooks";
 import { SavedCarsSettings } from "./saved-cars-settings";
 import { Button } from "./components/ui/button";
@@ -57,8 +58,10 @@ export function Settings() {
                 })
               }
             >
-              {["USD", "EUR", "GBP", "NGN"].map((c) => (
-                <option key={c}>{c}</option>
+              {currencyOptions.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>

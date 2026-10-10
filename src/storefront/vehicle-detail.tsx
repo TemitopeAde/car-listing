@@ -14,6 +14,7 @@ import { Input, Label, NativeSelect } from "./ui/input";
 import { VehicleCard } from "./vehicle-card";
 import { DetailGallery } from "./vehicle-gallery";
 import { VehicleContact, type PublicDealer } from "./vehicle-contact";
+import { VehicleShare } from "./vehicle-share";
 export function VehicleDetail({
   id,
   slug,
@@ -187,15 +188,18 @@ export function VehicleDetail({
             {vehicle.location} · Stock {vehicle.stockId}
           </p>
         </div>
-        <p data-sf="price" className="text-2xl font-semibold">
-          {money(vehicle.price, vehicle.currency)}
-          {vehicle.negotiable && (
-            <small className="text-sm font-normal text-muted-foreground">
-              {" "}
-              · Negotiable
-            </small>
-          )}
-        </p>
+        <div className="ml-auto grid justify-items-end gap-3">
+          <p data-sf="price" className="text-2xl font-semibold">
+            {money(vehicle.price, vehicle.currency)}
+            {vehicle.negotiable && (
+              <small className="text-sm font-normal text-muted-foreground">
+                {" "}
+                · Negotiable
+              </small>
+            )}
+          </p>
+          <VehicleShare vehicle={vehicle} />
+        </div>
       </header>
       <div className="sf-detail grid grid-cols-1 gap-8">
         <div className="grid min-w-0 content-start gap-6">

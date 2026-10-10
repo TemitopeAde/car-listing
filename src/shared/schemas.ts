@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { currencySchema } from "./currencies";
 import { isWixMediaUrl, mediaLimits } from "./media";
 import { isSamplePhotoPath } from "./sample-photos";
 import { bodyStyles, vehicleCategories } from "./vehicle-options";
@@ -75,7 +76,7 @@ export const vehicleInput = z
     mileageUnit: z.enum(["km", "mi"]).default("mi"),
     price: z.number().min(0).max(1e12),
     originalPrice: z.number().min(0).optional(),
-    currency: z.enum(["NGN", "USD", "EUR", "GBP"]).default("USD"),
+    currency: currencySchema.default("USD"),
     negotiable: z.boolean().default(false),
     category: z.enum(vehicleCategories).default("car"),
     bodyStyle: z.enum(bodyStyles).default("Sedan"),
@@ -197,6 +198,8 @@ export const inquirySchema = inquiryInput
     dealerId: z.string(),
     status: z.enum(["new", "contacted", "qualified", "closed"]).default("new"),
     notes: text(3000),
+    confirmationEmailStatus: z.enum(["pending", "queued", "failed"]).default("pending"),
+    confirmationTransmissionId: text(100),
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -242,7 +245,7 @@ export const themeSchema = z
     columns: z.number().int().min(1).max(4),
     fontFamily: z.enum(["system-ui", "Georgia", "Trebuchet MS"]),
     detailBasePath: z.string().regex(/^\/[a-zA-Z0-9/_-]*$/),
-    currency: z.enum(["NGN", "USD", "EUR", "GBP"]),
+    currency: currencySchema,
   })
   .strict();
 export type Theme = z.infer<typeof themeSchema>;

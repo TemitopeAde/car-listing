@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Mail, Phone, MessageSquare, Download } from "lucide-react";
+import { Phone, MessageSquare, Download } from "lucide-react";
 import { api, download } from "./api";
 import type { Inquiry } from "../shared/schemas";
 import { csvCell } from "../shared/utils";
 import { useResource } from "./hooks";
 import { Button, cn } from "./components/ui/button";
 import { Badge, LoadState, Empty } from "./components/common";
+import { InquiryEmail } from "./inquiry-email";
 export function Inquiries() {
   const [status, setStatus] = useState(""),
     [selected, setSelected] = useState<string | null>(null),
@@ -148,12 +149,6 @@ export function Inquiries() {
               </div>
               <p className="hint mt-2">Vehicle: {inquiry.vehicleId}</p>
               <div className="flex flex-wrap gap-3 my-5">
-                <Button asChild variant="outline">
-                  <a href={`mailto:${inquiry.email}`}>
-                    <Mail size={16} />
-                    Email buyer
-                  </a>
-                </Button>
                 {inquiry.phone && (
                   <Button asChild variant="outline">
                     <a href={`tel:${inquiry.phone.replace(/[^+\d]/g, "")}`}>
@@ -163,6 +158,11 @@ export function Inquiries() {
                   </Button>
                 )}
               </div>
+              <InquiryEmail
+                key={inquiry._id}
+                inquiry={inquiry}
+                reload={resource.reload}
+              />
               <p className="text-sm leading-relaxed bg-muted rounded-lg p-5 whitespace-pre-wrap">
                 {inquiry.message}
               </p>

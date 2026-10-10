@@ -1,8 +1,8 @@
 ---
-import { Marketplace } from "../../storefront/marketplace";
-import { styleKeys } from "../../storefront/widget-style";
-import { readFilterVisibility } from "../../storefront/filter-visibility";
-import { isLocalDemo } from "../../backend/context";
+import { Marketplace } from "../../../../storefront/marketplace";
+import { styleKeys } from "../../../../storefront/widget-style";
+import { readFilterVisibility } from "../../../../storefront/filter-visibility";
+import { isLocalDemo } from "../../../../backend/context";
 if (!isLocalDemo())
   return new Response("Local demo is disabled.", { status: 404 });
 const widgetStyle = Object.fromEntries(

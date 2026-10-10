@@ -32,7 +32,12 @@ import { Eye, Heart, LoaderCircle } from "lucide-react";
 import { VehicleQuickView } from "./vehicle-quick-view";
 import { toast, Toaster } from "sonner";
 import { toggleSavedCarForMember } from "../shared/member-saved-cars";
-import { onSavedCarsChange, readSavedCars } from "../shared/saved-cars";
+import {
+  onSavedCarsChange,
+  readSavedCars,
+  watchSavedCars,
+  savedCarsState,
+} from "../shared/saved-cars";
 import {
   storefrontRootStyle,
   readFont,
@@ -141,6 +146,7 @@ function MarketplaceContent({
     [quickView, setQuickView] = useState<Vehicle | null>(null),
     quickViewTrigger = useRef<HTMLElement | null>(null),
     [saved, setSaved] = useState<string[]>([]),
+    [savedBusy, setSavedBusy] = useState(false),
     [availableMakes, setAvailableMakes] = useState<string[]>([]),
     [makesError, setMakesError] = useState("");
   useEffect(() => {
@@ -173,9 +179,17 @@ function MarketplaceContent({
   }, [designMode]);
   useEffect(() => {
     if (designMode) return;
-    const sync = () => setSaved(readSavedCars().map((c) => c.id));
+    const sync = () => {
+      setSaved(readSavedCars().map((c) => c.id));
+      setSavedBusy(savedCarsState().loading);
+    };
     sync();
-    return onSavedCarsChange(sync);
+    const unsubscribe = onSavedCarsChange(sync);
+    const stopWatching = watchSavedCars();
+    return () => {
+      unsubscribe();
+      stopWatching();
+    };
   }, [designMode]);
   useEffect(() => {
     if (designMode) return;
@@ -437,9 +451,11 @@ function MarketplaceContent({
       ) : (
         <>
           <header className="mb-7 grid gap-2">
-            <p data-sf="brand" className="text-sm text-muted-foreground">
-              {theme.brandName}
-            </p>
+            {!/^autohaus\.?$/i.test(theme.brandName.trim()) && (
+              <p data-sf="brand" className="text-sm text-muted-foreground">
+                {theme.brandName}
+              </p>
+            )}
             <h2
               data-sf="heading"
               className="text-3xl font-semibold tracking-tight"
@@ -572,7 +588,8 @@ function MarketplaceContent({
                       "h-10 w-10 px-0",
                       saved.includes(v._id) && "text-primary",
                     )}
-                    disabled={designMode}
+                    disabled={designMode || savedBusy}
+                    aria-busy={savedBusy}
                     aria-pressed={saved.includes(v._id)}
                     aria-label={`${saved.includes(v._id) ? "Remove" : "Save"} ${v.title}`}
                     onClick={() => void save(v)}

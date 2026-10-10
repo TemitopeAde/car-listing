@@ -1,8 +1,9 @@
 import type { VehicleForm } from "./vehicle-form-types";
+import { currencyOptions } from "../../shared/currencies";
 import { Checkbox } from "./ui/checkbox";
 import type { Vehicle, VehicleInput, Dealer } from "../../shared/schemas";
 import { Button, cn } from "./ui/button";
-import { transitions } from "../../shared/utils";
+import { transitions, vehicleDetailsUrl } from "../../shared/utils";
 import {
   bodyStylesByCategory,
   categoryLabels,
@@ -202,7 +203,12 @@ export function VehicleSections({
       {section === 1 && (
         <div className="grid sm:grid-cols-2 gap-5">
           {field("price", "Asking price", "number", true)}
-          {select("currency", "Currency", ["USD", "EUR", "GBP", "NGN"])}
+          <VehicleSelect
+            form={form}
+            name="currency"
+            label="Currency"
+            values={currencyOptions}
+          />
           {field("originalPrice", "Original price (optional)", "number")}
           <label className="flex items-center gap-2">
             <Checkbox {...register("negotiable")} />
@@ -329,7 +335,9 @@ export function VehicleSections({
           {field("seoDescription", "SEO description (up to 170 characters)")}
           <p className="hint">
             The URL stays stable after a title change:{" "}
-            {saved ? `/cars/${saved.slug}` : "Assigned when you first save"}
+            {saved
+              ? vehicleDetailsUrl(saved.slug)
+              : "Assigned when you first save"}
           </p>
         </div>
       )}
